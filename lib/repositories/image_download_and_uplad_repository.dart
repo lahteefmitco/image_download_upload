@@ -101,7 +101,7 @@ class ImageDownloadAndUpladRepository {
     }
   }
 
-  // Isolete to upload data
+  // Isolate to upload data
   Future<String> _uploadImageEntryPoint(List<dynamic> args) async {
     try {
       log("isolete :- ${Isolate.current.debugName}");
