@@ -13,7 +13,7 @@ final class ImageDownloadListenerState extends ImageDownloadState {
 
 final class ImageDownloadBuildState extends ImageDownloadState {
   final bool showProgressBar;
+  final int progress;
 
-
-ImageDownloadBuildState({required this.showProgressBar});
+  ImageDownloadBuildState({required this.showProgressBar,this.progress = 0});
 }

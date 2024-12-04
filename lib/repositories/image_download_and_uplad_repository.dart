@@ -77,18 +77,19 @@ class ImageDownloadAndUpladRepository {
     }
   }
 
-  Future downloadAnImage(String imageAddress) async {
+  Future downloadAnImage(
+      {required String imageAddress,
+      required Function(int count, int total) onReceiveProgress}) async {
+    final path = (await getApplicationSupportDirectory()).path + imageAddress;
+    log(path);
     try {
-      final response = await dio.download("$baseUrl/$imageAddress",
-      // path to save downloaded file
-          (await getApplicationSupportDirectory()).path + imageAddress,
+      final response = await dio.download(
+          "$baseUrl/$imageAddress",
+          // path to save downloaded file
+          path,
 
           // to get the download progress
-          onReceiveProgress: (count, total) {
-        log(count.toString());
-        log(total.toString());
-      });
-
+          onReceiveProgress: onReceiveProgress);
       if (response.statusCode == 200) {
       } else {
         throw Exception("unknown Exception");

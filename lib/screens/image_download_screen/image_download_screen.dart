@@ -32,6 +32,8 @@ class ImageDownloadScreen extends StatefulWidget {
 class _ImageDownloadScreenState extends State<ImageDownloadScreen> {
   bool _showProgressBar = false;
 
+  int _progress = 0;
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ImageDownloadCubit, ImageDownloadState>(
@@ -51,6 +53,7 @@ class _ImageDownloadScreenState extends State<ImageDownloadScreen> {
       builder: (context, state) {
         if (state is ImageDownloadBuildState) {
           _showProgressBar = state.showProgressBar;
+          _progress = state.progress;
         }
         return Scaffold(
           appBar: AppBar(
@@ -59,22 +62,40 @@ class _ImageDownloadScreenState extends State<ImageDownloadScreen> {
           body: Stack(
             alignment: Alignment.center,
             children: [
-              Column(
-                children: [
-                  // To show image
-                  Image.network("$baseUrl/${widget.imageAddress}"),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-
-                      // download image
-                      context.read<ImageDownloadCubit>().downloadImage(widget.imageAddress);
-                    },
-                    child: const Text("Download"),
-                  )
-                ],
+              Center(
+                child: Column(
+                  children: [
+                    Text("Progress $_progress"),
+                    const SizedBox(
+                      height: 24,
+                    ),
+                    SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.network(
+                            "$baseUrl/${widget.imageAddress}",
+                            width: 200,
+                            height: 300,
+                          ),
+                          const SizedBox(
+                            height: 16,
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              // download image
+                              context
+                                  .read<ImageDownloadCubit>()
+                                  .downloadImage(widget.imageAddress);
+                            },
+                            child: const Text("Download"),
+                          )
+                        ],
+                      ),
+                    )
+                    // To show image
+                  ],
+                ),
               ),
               if (_showProgressBar) const CircularProgressIndicator()
             ],
