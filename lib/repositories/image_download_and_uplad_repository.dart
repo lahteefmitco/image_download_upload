@@ -1,7 +1,9 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image_download_upload/main.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -20,7 +22,7 @@ class ImageDownloadAndUpladRepository {
           // Do something with response data.
           // If you want to reject the request with a error message,
           // you can reject a `DioException` object using `handler.reject(dioError)`.
-          log("response");
+          log("response received");
           return handler.next(response);
         },
         onError: (DioException error, ErrorInterceptorHandler handler) {
@@ -54,17 +56,39 @@ class ImageDownloadAndUpladRepository {
   }
 
   Future<String> uploadAnImage(File file) async {
+    log("isolete :- ${Isolate.current.debugName}");
     try {
-      // uploading image as form data
-      final formData =
-          FormData.fromMap({"image": await MultipartFile.fromFile(file.path)});
-      final response = await dio.post("/upload", data: formData);
+      // Calling isolate by using compute method
+      final imageAddress =
+          await compute(_uploadImageEntryPoint, [file.path, dio]);
+      log(imageAddress);
+      return imageAddress;
+    } catch (e) {
+      log(e.toString(), name: "uploadImage");
+      rethrow;
+    }
+  }
 
+  Future downloadAnImage({
+    required String imageAddress,
+    required Function(
+      int count,
+      int total,
+    ) onReceiveProgress,
+  }) async {
+    // get path for saving download file
+    final path = (await getApplicationSupportDirectory()).path + imageAddress;
+    log(path);
+    try {
+      final response = await dio.download(
+          // url
+          "$baseUrl/$imageAddress",
+          // path to save downloaded file
+          path,
+
+          // to get the download progress
+          onReceiveProgress: onReceiveProgress);
       if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
-
-        // get image address from response
-        return data["image"];
       } else {
         throw Exception("unknown Exception");
       }
@@ -77,20 +101,22 @@ class ImageDownloadAndUpladRepository {
     }
   }
 
-  Future downloadAnImage(
-      {required String imageAddress,
-      required Function(int count, int total) onReceiveProgress}) async {
-    final path = (await getApplicationSupportDirectory()).path + imageAddress;
-    log(path);
+  // Isolete to upload data
+  Future<String> _uploadImageEntryPoint(List<dynamic> args) async {
     try {
-      final response = await dio.download(
-          "$baseUrl/$imageAddress",
-          // path to save downloaded file
-          path,
+      log("isolete :- ${Isolate.current.debugName}");
+      final String filePath = args[0];
+      final Dio dio = args[1];
+      final formData =
+          FormData.fromMap({"image": await MultipartFile.fromFile(filePath)});
 
-          // to get the download progress
-          onReceiveProgress: onReceiveProgress);
+      final response = await dio.post("$baseUrl/upload", data: formData);
+
       if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+
+        // get image address from response
+        return data["image"];
       } else {
         throw Exception("unknown Exception");
       }

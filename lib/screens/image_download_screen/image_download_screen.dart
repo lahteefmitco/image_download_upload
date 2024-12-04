@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_download_upload/main.dart';
@@ -32,7 +34,7 @@ class ImageDownloadScreen extends StatefulWidget {
 class _ImageDownloadScreenState extends State<ImageDownloadScreen> {
   bool _showProgressBar = false;
 
-  int _progress = 0;
+  double _progress = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +57,8 @@ class _ImageDownloadScreenState extends State<ImageDownloadScreen> {
           _showProgressBar = state.showProgressBar;
           _progress = state.progress;
         }
+
+        log(_progress.toString(), name: "latheef");
         return Scaffold(
           appBar: AppBar(
             title: const Text("Image Dwonload"),
@@ -65,7 +69,13 @@ class _ImageDownloadScreenState extends State<ImageDownloadScreen> {
               Center(
                 child: Column(
                   children: [
-                    Text("Progress $_progress"),
+                    SizedBox(
+                      width: 300,
+                      child: LinearProgressIndicator(
+                        value: _progress,
+                      ),
+                    ),
+                    if (_progress != 0) Text("${_progress * 100}"),
                     const SizedBox(
                       height: 24,
                     ),
@@ -77,6 +87,18 @@ class _ImageDownloadScreenState extends State<ImageDownloadScreen> {
                             "$baseUrl/${widget.imageAddress}",
                             width: 200,
                             height: 300,
+                            // frameBuilder: (context, child, value, flag) {
+                            //   log("value $value");
+                            //   log("flag $flag");
+                            //   return  CircularProgressIndicator();
+                            // },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) {
+                                return child;
+                              } else {
+                                return const CircularProgressIndicator();
+                              }
+                            },
                           ),
                           const SizedBox(
                             height: 16,

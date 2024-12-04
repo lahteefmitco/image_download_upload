@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,12 +16,12 @@ class ImageDownloadCubit extends Cubit<ImageDownloadState> {
       await imageDownloadAndUpladRepository.downloadAnImage(
         imageAddress: imageAddress,
         onReceiveProgress: (count, total) {
-          final percentage = ((count / total) * 100).toInt();
-          log(percentage.toString(),name: "download");
+          final percentage = count / total;
+         // log(percentage.toString(),name: "download");
           emit(ImageDownloadBuildState(showProgressBar: true,progress: percentage));
         },
       );
-      emit(ImageDownloadBuildState(showProgressBar: false,progress: 100));
+      emit(ImageDownloadBuildState(showProgressBar: false,progress: 1));
       emit(ImageDownloadListenerState(message: "Downloaded"));
     } catch (e) {
       emit(ImageDownloadBuildState(showProgressBar: false));
